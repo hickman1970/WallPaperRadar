@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
@@ -40,6 +41,11 @@ public class MainActivity extends AppCompatActivity {
     /** Called when the user clicks the Send button */
     public void ButtonClick(View view) {
         // Do something in response to button
-        ((TextView)findViewById(R.id.textView)).setText("New text");
+
+        ImageView myImage;
+        myImage = (ImageView) findViewById(R.id.imageView);
+
+        ((TextView)findViewById(R.id.textView)).setText(R.string.button_pressed);
+        myImage.setImageResource(R.drawable.cyclocross);
     }
 }
