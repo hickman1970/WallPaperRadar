@@ -1,5 +1,8 @@
 package com.williamhickman.wallpaperradar;
 
+import android.app.DownloadManager;
+import android.content.Context;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -52,12 +56,11 @@ public class MainActivity extends AppCompatActivity {
     public void ButtonClick(View view) {
         // Do something in response to button
 
-        final int BUFFER_SIZE = 4096;
-
+        String myURL = "http://api.wunderground.com/api/5038d6c22e55f561/radar/image.gif?centerlat=38.5&centerlon=-91&radius=100&width=280&height=280&newmaps=1";
         ImageView myImage;
         File myFile;
-        URL myURL;
 
+        ((TextView)findViewById(R.id.textView)).setText("1");
         myImage = (ImageView) findViewById(R.id.imageView);
 
         // create temp file
@@ -71,49 +74,24 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // download radar iamge
-        try
-        {
-            myURL = new URL("http://api.wunderground.com/api/5038d6c22e55f561/radar/image.gif?centerlat=38.5&centerlon=-91&radius=100&width=280&height=280&newmaps=1");
 
-            // download code came from http://www.codejava.net/java-se/networking/use-httpurlconnection-to-download-file-from-an-http-url
+            //myURL = new URL("http://api.wunderground.com/api/5038d6c22e55f561/radar/image.gif?centerlat=38.5&centerlon=-91&radius=100&width=280&height=280&newmaps=1");
 
-            HttpURLConnection httpConn = (HttpURLConnection) myURL.openConnection();
-            //ResponseCode = httpConn.getResponseCode();
-
-            // always check HTTP response code first
-            //if (responseCode == HttpURLConnection.HTTP_OK)
-            //{
-                int contentLength = httpConn.getContentLength();
-
-                // opens input stream from the HTTP connection
-                //InputStream inputStream = httpConn.getInputStream();
-                //String saveFilePath = getBaseContext().getCacheDir() + File.separator + "radar.gif";
-
-                // opens an output stream to save into file
-                //FileOutputStream outputStream = new FileOutputStream(saveFilePath);
-
-                /*
-                int bytesRead = -1;
-                byte[] buffer = new byte[BUFFER_SIZE];
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
-                }
-*/
-                //outputStream.close();
-                //inputStream.close();
-            //}
-
-        }
-        catch (IOException e)
-        {
-            Log.d("WallPaperRadar", "Error: " + e);
-        }
-
-        ((TextView)findViewById(R.id.textView)).setText("Set URL");
-
-        //
-
-        ((TextView)findViewById(R.id.textView)).setText("Created temp file");
+        ((TextView)findViewById(R.id.textView)).setText("2");
+        DownloadManager.Request myRequest  = new DownloadManager.Request(Uri.parse(myURL));
+        /*
+        ((TextView)findViewById(R.id.textView)).setText("3");
+        myRequest.setDescription("Downloading latest radar image");
+        ((TextView)findViewById(R.id.textView)).setText("4");
+        myRequest.setTitle("WallPaperRadar Downloading Image");
+        ((TextView)findViewById(R.id.textView)).setText("5");
+        myRequest.allowScanningByMediaScanner();
+        ((TextView)findViewById(R.id.textView)).setText("6");
+        myRequest.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        myRequest.setDestinationInExternalPublicDir(getBaseContext().getCacheDir().toString(), "radar.gif");
+        DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+        manager.enqueue(myRequest);
+    */
 
         //((TextView)findViewById(R.id.textView)).setText(R.string.button_pressed);
         //myImage.setImageResource(R.drawable.cyclocross);
