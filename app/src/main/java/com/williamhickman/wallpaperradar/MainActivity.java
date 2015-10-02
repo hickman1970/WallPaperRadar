@@ -3,6 +3,7 @@ package com.williamhickman.wallpaperradar;
 import android.app.DownloadManager;
 import android.content.Context;
 import android.net.Uri;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -60,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
         ImageView myImage;
         File myFile;
 
+
+
         ((TextView)findViewById(R.id.textView)).setText("1");
         myImage = (ImageView) findViewById(R.id.imageView);
 
@@ -77,21 +80,18 @@ public class MainActivity extends AppCompatActivity {
 
             //myURL = new URL("http://api.wunderground.com/api/5038d6c22e55f561/radar/image.gif?centerlat=38.5&centerlon=-91&radius=100&width=280&height=280&newmaps=1");
 
-        ((TextView)findViewById(R.id.textView)).setText("2");
-        DownloadManager.Request myRequest  = new DownloadManager.Request(Uri.parse(myURL));
-        /*
-        ((TextView)findViewById(R.id.textView)).setText("3");
-        myRequest.setDescription("Downloading latest radar image");
-        ((TextView)findViewById(R.id.textView)).setText("4");
-        myRequest.setTitle("WallPaperRadar Downloading Image");
-        ((TextView)findViewById(R.id.textView)).setText("5");
-        myRequest.allowScanningByMediaScanner();
-        ((TextView)findViewById(R.id.textView)).setText("6");
-        myRequest.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        myRequest.setDestinationInExternalPublicDir(getBaseContext().getCacheDir().toString(), "radar.gif");
-        DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-        manager.enqueue(myRequest);
-    */
+            DownloadManager.Request myRequest = new DownloadManager.Request(Uri.parse(myURL));
+            myRequest.setDescription("Downloading latest radar image");
+            myRequest.setTitle("WallPaperRadar Downloading Image");
+            myRequest.allowScanningByMediaScanner();
+            myRequest.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            myRequest.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, "radar.gif");
+
+            DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+
+            manager.enqueue(myRequest);
+            ((TextView) findViewById(R.id.textView)).setText("Download Request Queued");
+
 
         //((TextView)findViewById(R.id.textView)).setText(R.string.button_pressed);
         //myImage.setImageResource(R.drawable.cyclocross);
