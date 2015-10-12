@@ -1,6 +1,7 @@
 package com.williamhickman.wallpaperradar;
 
 import android.app.DownloadManager;
+import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -30,11 +31,33 @@ import java.net.URLConnection;
 
 public class MainActivity extends AppCompatActivity {
 
+    /*
+        Variables
+     */
+    String class_String_URL = "http://api.wunderground.com/api/5038d6c22e55f561/radar/image.gif?centerlat=38.5&centerlon=-91&radius=150&width=280&height=280&newmaps=1";
+    String class_String_Radar = "radar.gif";
+    Uri class_Uri_RadarImage;
+    String class_String_Radar_Full_Path;
+    Long class_Long_DownloadID;
+
+    private BroadcastReceiver class_BroadcastReceiver_ProcessNotification = new BroadcastReceiver()
+    {
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            parseDownload(context, intent);
+        }
+    };
+
+    /////////
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d("wsh", "onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        class_String_Radar_Full_Path = getExternalFilesDir(null) + "/" + class_String_Radar;
+        class_Uri_RadarImage = Uri.parse("file://" + class_String_Radar_Full_Path);
+        Log.d("wsh", "onCreate() using " + class_String_Radar_Full_Path);
     }
 
     @Override
@@ -60,21 +83,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /** Called when the user clicks the Send button */
-    public void ButtonClick(View view) {
-        // Do something in response to button
-
+    /*
+        Testing...testing...1...2...3
+     */
+    public void ButtonClick(View view)
+    {
         Log.d("wsh", "ButtonClick()");
 
-        String myURL = "http://api.wunderground.com/api/5038d6c22e55f561/radar/image.gif?centerlat=38.5&centerlon=-91&radius=100&width=280&height=280&newmaps=1";
-        ImageView myImage;
-        File myFile;
-        Uri myURIImage;
 
-        Log.d("wsh", "ButtonClick() Setting myImage");
-        ((TextView)findViewById(R.id.textView)).setText("1");
-        myImage = (ImageView) findViewById(R.id.imageView);
+        //ImageView myImage;
+        //File myFile;
+        //Uri myURIImage;
+
+        //Log.d("wsh", "ButtonClick() Setting myImage");
+        //((TextView)findViewById(R.id.textView)).setText("1");
+        //myImage = (ImageView) findViewById(R.id.imageView);
 
         // create temp file
+        /*
         try
         {
             Log.d("wsh", "ButtonClick() creating temp file myFile");
@@ -85,45 +111,71 @@ public class MainActivity extends AppCompatActivity {
         {
             Log.d("WallPaperRadar", "Error: " + e);
         }
+        */
 
         // download radar iamge
 
-        //myURL = new URL("http://api.wunderground.com/api/5038d6c22e55f561/radar/image.gif?centerlat=38.5&centerlon=-91&radius=100&width=280&height=280&newmaps=1");
+        //myURL = new URL("http://api.wunderground.com/api/5038d6c22e55f561/radar/image.gif?centerlat=38.5&centerlon=-91&radius=200&width=280&height=280&newmaps=1");
 
-            Log.d("wsh", "ButtonClick() creating download manager request myRequest");
-            DownloadManager.Request myRequest = new DownloadManager.Request(Uri.parse(myURL));
+        DownloadManager.Request myRequest = new DownloadManager.Request(Uri.parse(class_String_URL));
 
-            Log.d("wsh", "ButtonClick() setting properties of myRequest");
-            myRequest.setDescription("Downloading latest radar image");
-            myRequest.setTitle("WallPaperRadar Downloading Image");
-            myRequest.allowScanningByMediaScanner();
-            //myRequest.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
+        myRequest.setDescription("Downloading latest radar image");
+        myRequest.setTitle("WallPaperRadar Downloading Image");
+        myRequest.allowScanningByMediaScanner();
+
+        // How do we hide the download?
+        //myRequest.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
         myRequest.setVisibleInDownloadsUi(Boolean.FALSE);
-            Log.d("wsh", "ButtonClick() - using DIRECTORY_DOWNLOADS");
-            myRequest.setDestinationInExternalFilesDir(MainActivity.this, Environment.DIRECTORY_DOWNLOADS, "radar.gif");
 
-            Log.d("wsh", "ButtonClick() creating DownloadManger manager");
-            DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+        Log.d("wsh", "ButtonClick() saving file as " + "radar.gif");
+        Log.d("wsh", "ButtonClick()                 with external files directory being " + getExternalFilesDir(null));  ///storage/090C-1F1A/Android/data/com.williamhickman.wallpaperradar/files
+        if (this.isFileExists(class_String_Radar_Full_Path))
+        {
+            this.myDeleteFile(class_String_Radar_Full_Path);
+        }
+        //myRequest.setDestinationInExternalFilesDir(MainActivity.this, "", "radar.gif");
+        myRequest.setDestinationUri(class_Uri_RadarImage);
+        DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+        class_Long_DownloadID = manager.enqueue(myRequest);
 
-            Log.d("wsh", "ButtonClick() queueing DownloadManager request");
-            manager.enqueue(myRequest);
+        this.registerBroadcastReceiver();
 
-            Log.d("wsh", "ButtonClick() downloading???");
-            myURIImage = Uri.parse(getBaseContext().getExternalFilesDir("radar.gif").toString());
-            myImage.setImageURI(myURIImage);
+            //myURIImage = Uri.parse(getBaseContext().getExternalFilesDir("radar.gif").toString());
+            //myImage.setImageURI(myURIImage);
 
+        /*
         // enable our receiver so that we get notified of download events
-        Log.d("wsh", "ButtonClick() turn on recevier");
+        Log.d("wsh", "ButtonClick() enable recevier to catch download broadcasts");
+        Log.d("wsh", "ButtonClick() set PackageManager pm");
         PackageManager pm = getApplicationContext().getPackageManager();
-        ComponentName componentName = new ComponentName("com.williamhickman.wallpaperradar", ".DownloadReceiver");
+        Log.d("wsh", "ButtonClick() set ComponentName componentName");
+        ComponentName componentName = new ComponentName(getPackageName(), ".receiverDownload");
+        Log.d("wsh", "ButtonClick() " + componentName.toString());
+        Log.d("wsh", "ButtonClick() " + componentName.getPackageName());
+        Log.d("wsh", "ButtonClick() " + componentName.getClassName());
+
+        Log.d("wsh", "ButtonClick() pm.setComponentEnabledSetting()");
         pm.setComponentEnabledSetting(componentName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+*/
+
 
         // disable this when we dont' need it!!!
         // call somethign like this when our download is done
+        // also, according to Google docs, call it in onPause()
         //pm.setComponentEnabledSetting(componentName, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
 
         //((TextView)findViewById(R.id.textView)).setText(R.string.button_pressed);
         //myImage.setImageResource(R.drawable.cyclocross);
+
+        Log.d("wsh", "ButtonClick() done");
+    }
+
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        Log.d("wsh", "onPause()");
+        this.unregisterBroadcastReceiver();
     }
 
     @Override
@@ -133,12 +185,65 @@ public class MainActivity extends AppCompatActivity {
         Log.d("wsh", "onResume()");
     }
 
-    public void DownloadReceiver()
+    public void registerBroadcastReceiver()
     {
+        Log.d("wsh", "registerBroadcastReceiver()");
+        this.registerReceiver(class_BroadcastReceiver_ProcessNotification, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+    }
 
-        Log.d("wsh", "receiverDownloadComplete()");
+    public void unregisterBroadcastReceiver()
+    {
+        Log.d("wsh", "unregisterBroadcastReceiver()");
+        this.unregisterReceiver(class_BroadcastReceiver_ProcessNotification);
+    }
+
+
+    public void parseDownload(Context context, Intent intent)
+    {
+        Log.d("wsh", "parseDownload()");
+
+        Long method_Long_DownloadID_From_Intent = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0);
+
+
+        Log.d("wsh", "parseDownload() got id " + method_Long_DownloadID_From_Intent);
+        Log.d("wsh", "parseDownload() looking for " + class_Long_DownloadID);
+        if (method_Long_DownloadID_From_Intent == class_Long_DownloadID)
+        {
+            this.unregisterBroadcastReceiver();
+            this.setWallpaper();
+        }
 
     }
 
+    public void setWallpaper()
+    {
+        WallpaperManager myWallpaperManager = WallpaperManager.getInstance(getApplicationContext());
+        Uri method_URI_RadarFile = Uri.parse(class_String_Radar_Full_Path);
+
+        ImageView method_ImageView_Picture = (ImageView) findViewById(R.id.imageView);
+        method_ImageView_Picture.setImageURI(method_URI_RadarFile);
+
+        //myWallpaperManager.setResource();
+        myWallpaperManager.
+        myWallpaperManager.getCropAndSetWallpaperIntent(method_URI_RadarFile);
+    }
+
+    private boolean isFileExists(String filename)
+    {
+        Log.d("wsh", "isFileExists()");
+        File myFile = new File(filename);
+        Log.d("wsh", "isFileExists() " + filename + "=>" + myFile.exists());
+        return myFile.exists();
+
+    }
+
+    private boolean myDeleteFile(String filename)
+    {
+        Log.d("wsh", "myDeleteFile()");
+        Log.d("wsh", "myDeleteFile() deleting " + filename);
+        File folder1 = new File(filename);
+        return folder1.delete();
+
+    }
 }
 
