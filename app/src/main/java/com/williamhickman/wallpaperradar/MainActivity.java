@@ -8,6 +8,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -28,6 +34,9 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.DateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -194,7 +203,18 @@ public class MainActivity extends AppCompatActivity {
     public void unregisterBroadcastReceiver()
     {
         Log.d("wsh", "unregisterBroadcastReceiver()");
-        this.unregisterReceiver(class_BroadcastReceiver_ProcessNotification);
+
+        try
+        {
+            this.unregisterReceiver(class_BroadcastReceiver_ProcessNotification);
+        }
+        catch(IllegalArgumentException e)
+        {
+            // can we check here for something so that we know we are here because
+            // there was no receiver to unregister?  Otherwise we just assume that's the
+            // only reason we would be here.
+            Log.d("wsh", "unregisterBroadcastReceiver() with exception " + e.toString());
+        }
     }
 
 
@@ -218,14 +238,55 @@ public class MainActivity extends AppCompatActivity {
     public void setWallpaper()
     {
         WallpaperManager myWallpaperManager = WallpaperManager.getInstance(getApplicationContext());
-        Uri method_URI_RadarFile = Uri.parse(class_String_Radar_Full_Path);
+        Uri method_URI_RadarFile = Uri.parse("file://" + class_String_Radar_Full_Path);
 
         ImageView method_ImageView_Picture = (ImageView) findViewById(R.id.imageView);
-        method_ImageView_Picture.setImageURI(method_URI_RadarFile);
+        //method_ImageView_Picture.setImageURI(method_URI_RadarFile);
+
 
         //myWallpaperManager.setResource();
-        myWallpaperManager.
-        myWallpaperManager.getCropAndSetWallpaperIntent(method_URI_RadarFile);
+        //myWallpaperManager.
+        //myWallpaperManager.getCropAndSetWallpaperIntent(method_URI_RadarFile);
+        //myWallpaperManager.set
+
+        File image = new File(class_String_Radar_Full_Path);
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        bmOptions.inMutable = true;
+        Bitmap bitmap = BitmapFactory.decodeFile(image.getAbsolutePath(),bmOptions);
+        bitmap = Bitmap.createBitmap(bitmap);
+
+        // try to draw something on the bitmap
+
+        String method_String_test = DateFormat.getDateTimeInstance().format(new Date());
+        Canvas canvas = new Canvas(bitmap);
+        // new antialised Paint
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        // text color - #3D3D3D
+        paint.setColor(Color.WHITE);
+        // text size in pixels
+        paint.setTextSize((int) (14));
+        // text shadow
+        //paint.setShadowLayer(1f, 0f, 1f, Color.WHITE);
+
+        // draw text to the Canvas center
+        Rect bounds = new Rect();
+        paint.getTextBounds(method_String_test, 0, method_String_test.length(), bounds);
+        int x = (bitmap.getWidth() - bounds.width())/2;
+        int y = (bitmap.getHeight() + bounds.height())/2;
+
+        canvas.drawText(method_String_test, x, y, paint);
+
+        try
+        {
+            myWallpaperManager.setBitmap(bitmap);
+        }
+        catch (IOException e)
+        {
+            Log.d("wsh", "set wallpaper failed");
+        }
+
+        // set the image in the app too so we can see it for testing
+        method_ImageView_Picture.setImageBitmap(bitmap);
     }
 
     private boolean isFileExists(String filename)
